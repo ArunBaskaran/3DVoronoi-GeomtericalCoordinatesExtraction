@@ -16,6 +16,7 @@ FILE * file4 ;
 FILE * file5 ;
 FILE * file6 ;
 FILE * file7 ;
+FILE * file8 ;
 
 const int n = 100 ;
 
@@ -34,6 +35,8 @@ int id;
 
 int assign_vertex_id(float x, float y, float z)
 {
+	if((x>1)||(y>1)||(z>1))
+		return -1 ;
 	for(int i = 0 ; i <= id_flag ; i++)
 	{
 		if((x==vertex_list[i][0])&&(y==vertex_list[i][1])&&(z==vertex_list[i][2]))
@@ -48,7 +51,19 @@ int assign_vertex_id(float x, float y, float z)
 
 	return id_flag ;
 }
-		
+
+int check_unique_edge(int old_id, int id, int edge_flag)
+{
+	int status = 0 ;
+	for(int i = 0 ; i <=edge_flag ; i++)
+	{
+		if((edge_list[i][0] == old_id)&&(edge_list[i][1]==id))
+			status = -1 ;
+		else if((edge_list[i][1] == old_id)&&(edge_list[i][0]==id))
+			status = -1 ;
+	}
+	return status ;
+}
 
 int main(int argc, char * argv[])
 {
@@ -57,7 +72,7 @@ for(int i = 0 ; i < 1000 ; i++)
 {
 	for(int j = 0 ; j < 100 ; j++)
 	{
-		face_list[i][j] = -1 ;
+		face_list[i][j] = INT_MAX ;
 		cell_list[i][j] = -1 ;
 	}
 }
@@ -84,6 +99,12 @@ for(int i = 0 ; i < 1000 ; i++)
 		return EXIT_FAILURE;
     }
 
+	file8 = fopen("NewGenerator3D.fe", "w");
+	if ( file8 == NULL )
+    {
+		//perror( "file not opened\n" );
+		return EXIT_FAILURE;
+    }
 
     int i = 0;
     float x, y, z ;
@@ -110,6 +131,7 @@ for(int i = 0 ; i < 1000 ; i++)
 		{
 			//x_old = y_old = z_old = 0 ;
 			//fscanf(file1, "%c", &temp_char);
+			sscanf( temp, " %f %f %f", &x, &y, &z);
 			old_id = -1 ;
 			continue ;
 		}
@@ -117,17 +139,33 @@ for(int i = 0 ; i < 1000 ; i++)
 		sscanf( temp, " %f %f %f", &x, &y, &z);
 		
 		//fscanf(file1, " %f %f %f", &x, &y, &z);
-		//printf("%f %f %f\n", x, y, z);
+		printf("%f %f %f\n", x, y, z);
 		if(feof(file1))
 		{
 			break;
 		}
 
+			if(x<0.000000)
+				x=0.0;
+			if(y<0.000000)
+				y=0.0;
+			if(z<0.000000)
+				z=0.0;
+
 		id = assign_vertex_id(x,y,z);
+		if(id==-1)
+			continue;
 		if(old_id!=-1)
 		{
+			int status = check_unique_edge(old_id, id, edge_flag);
+			if(status==-1)
+			{
+				i++;
+				old_id = id ;
+				continue;
+			}
 			edge_flag++ ;
-			fprintf(file3, "%d\t%d\t%d", edge_flag, old_id, id);
+			fprintf(file3, "%d\t%d\t%d", edge_flag+1, old_id+1, id+1);
 			edge_list[edge_flag][0] = old_id ;
 			edge_list[edge_flag][1] = id ;
 			if((vertex_list[old_id][0]==0.0)&&(vertex_list[id][0]==0.0))
@@ -160,7 +198,7 @@ for(int i = 0 ; i < 1000 ; i++)
 			vertex_list[i][1]=0.0 ;
 		if(vertex_list[i][2]<=0)
 			vertex_list[i][2]=0.0 ;
-		fprintf(file2, "%f\t%f\t%f", vertex_list[i][0], vertex_list[i][1], vertex_list[i][2]);
+		fprintf(file2, "%d\t%f\t%f\t%f", i+1, vertex_list[i][0], vertex_list[i][1], vertex_list[i][2]);
 		if(((vertex_list[i][0]==0.0)||(vertex_list[i][0]==1.0))&&((vertex_list[i][1]==0.0)||(vertex_list[i][1]==1.0))&&((vertex_list[i][2]==0.0)||(vertex_list[i][2]==1.0)))
 			fprintf(file2, "\t\t\tfixed");
 		else if(vertex_list[i][0]==0.0)
@@ -177,6 +215,58 @@ for(int i = 0 ; i < 1000 ; i++)
 			fprintf(file2, "\t\t\tconstraint 6");
 		fprintf(file2, "\n");
 		fflush(file2);
+	}
+
+	fprintf(file8, "vertices\n");
+	for(int i = 0 ; i <= id_flag ; i++)
+	{
+		if(vertex_list[i][0]<=0.0)
+			vertex_list[i][0]=0.0000 ;
+		if(vertex_list[i][1]<=0.0)
+			vertex_list[i][1]=0.0 ;
+		if(vertex_list[i][2]<=0)
+			vertex_list[i][2]=0.0 ;
+		fprintf(file8, "%d\t%f\t%f\t%f", i+1, vertex_list[i][0], vertex_list[i][1], vertex_list[i][2]);
+		if(((vertex_list[i][0]==0.0)||(vertex_list[i][0]==1.0))&&((vertex_list[i][1]==0.0)||(vertex_list[i][1]==1.0))&&((vertex_list[i][2]==0.0)||(vertex_list[i][2]==1.0)))
+			fprintf(file8, "\t\t\tfixed");
+		else if(vertex_list[i][0]==0.0)
+			fprintf(file8, "\t\t\tconstraint 1");
+		else if(vertex_list[i][0]==1.0)
+			fprintf(file8, "\t\t\tconstraint 2");
+		else if(vertex_list[i][1]==0.0)
+			fprintf(file8, "\t\t\tconstraint 3");
+		else if(vertex_list[i][1]==1.0)
+			fprintf(file8, "\t\t\tconstraint 4");
+		else if(vertex_list[i][2]==0.0)
+			fprintf(file8, "\t\t\tconstraint 5");
+		else if(vertex_list[i][2]==1.0)
+			fprintf(file8, "\t\t\tconstraint 6");
+		fprintf(file8, "\n");
+		fflush(file8);
+	}
+
+	fprintf(file8, "edges\n");
+	for(int i = 0 ; i <=edge_flag ; i++)
+	{
+			
+			fprintf(file8, "%d\t%d\t%d", i+1, old_id+1, id+1);
+			//edge_list[edge_flag][0] = old_id ;
+			//edge_list[edge_flag][1] = id ;
+			if((vertex_list[old_id][0]==0.0)&&(vertex_list[id][0]==0.0))
+				fprintf(file8, "\t\t\tconstraint 1");
+			else if((vertex_list[old_id][0]==1.0)&&(vertex_list[id][0]==1.0))
+				fprintf(file8, "\t\t\tconstraint 2");
+			else if((vertex_list[old_id][1]==0.0)&&(vertex_list[id][1]==0.0))
+				fprintf(file8, "\t\t\tconstraint 3");
+			else if((vertex_list[old_id][1]==1.0)&&(vertex_list[id][0]==1.0))
+				fprintf(file8, "\t\t\tconstraint 4");
+			else if((vertex_list[old_id][2]==0.0)&&(vertex_list[id][2]==0.0))
+				fprintf(file8, "\t\t\tconstraint 5");
+			else if((vertex_list[old_id][2]==1.0)&&(vertex_list[id][0]==1.0))
+				fprintf(file8, "\t\t\tconstraint 6");
+			fprintf(file8, "\n");
+			fflush(file8);
+
 	}
 	
 	//printf("%d\n", i);
@@ -213,7 +303,7 @@ for(int i = 0 ; i < 1000 ; i++)
 	int first_id = -1 ;
 	int last_id = -1 ;
 	int cell_end = -1 ;
-	int cell_count = -1;
+	int cell_count = -1 ;
 	int edge_count = -1 ;
 	int face_count = -1 ;
 	while(!feof(file1))
@@ -242,7 +332,7 @@ for(int i = 0 ; i < 1000 ; i++)
 			cell_end = 0 ;
 			face_flag++ ;
 			
-			fprintf(file5, "%d\t", face_flag);	
+			fprintf(file5, "%d\t", face_flag+1);	
 			cell_list[cell_count][++face_count] = face_flag ;			
 			fflush(file1);
 			memmove(temp, temp+1, strlen(temp));
@@ -254,7 +344,12 @@ for(int i = 0 ; i < 1000 ; i++)
 			{
 				break;
 			}
-
+			if(x<0.000000)
+				x=0.0;
+			if(y<0.000000)
+				y=0.0;
+			if(z<0.000000)
+				z=0.0;
 			id = assign_vertex_id(x,y,z);
 			
 			if(last_id!=-1)
@@ -263,22 +358,22 @@ for(int i = 0 ; i < 1000 ; i++)
 				{
 					if((edge_list[i][0]==last_id)&&(edge_list[i][1]==first_id))
 					{
-						fprintf(file4, "\t%d ", i);
-						face_list[face_flag-1][++edge_count] = i ;
+						fprintf(file4, "\t%d ", i+1);
+						face_list[face_flag-1][++edge_count] = i+1 ;
 					}
 					if((edge_list[i][1]==last_id)&&(edge_list[i][0]==first_id))
 					{
-						fprintf(file4, "\t%d ", -i);
-						face_list[face_flag-1][++edge_count] = -i ;
+						fprintf(file4, "\t%d ", -(i+1));
+						face_list[face_flag-1][++edge_count] = -(i+1) ;
 					}
 				}
 			}
 			
 			first_id = old_id = id ;
 			if(face_flag==0)
-				fprintf(file4, "%d", face_flag);
+				fprintf(file4, "%d", face_flag+1);
 			else if(face_flag > 0)
-				fprintf(file4, "\n%d", face_flag);
+				fprintf(file4, "\n%d", face_flag+1);
 			
 			edge_count=-1;
 		}
@@ -293,18 +388,25 @@ for(int i = 0 ; i < 1000 ; i++)
 			{
 				break;
 			}
+			if(x<0.000000)
+				x=0.0;
+			if(y<0.000000)
+				y=0.0;
+			if(z<0.000000)
+				z=0.0;
+			printf("%f %f %f\n", x, y, z);
 			id = assign_vertex_id(x,y,z);
 			for(int i = 0; i<=edge_flag ; i++)
 			{
 				if((edge_list[i][0]==old_id)&&(edge_list[i][1]==id))
 				{
-					fprintf(file4, "\t%d", i);
-					face_list[face_flag][++edge_count] = i ;
+					fprintf(file4, "\t%d", i+1);
+					face_list[face_flag][++edge_count] = i+1 ;
 				}
 				else if((edge_list[i][1]==old_id)&&(edge_list[i][0]==id))
 				{
-					fprintf(file4, "\t%d", -i);
-					face_list[face_flag][++edge_count] = -i ;
+					fprintf(file4, "\t%d", -(i+1));
+					face_list[face_flag][++edge_count] = -(i+1) ;
 				}
 					
 			}
@@ -320,17 +422,18 @@ for(int i = 0 ; i < 1000 ; i++)
 				{
 					if((edge_list[i][0]==last_id)&&(edge_list[i][1]==first_id))
 					{
-						fprintf(file4, "\t%d ", i);
-						face_list[face_flag][++edge_count] = i ;
+						fprintf(file4, "\t%d ", i+1);
+						face_list[face_flag][++edge_count] = i+1 ;
 					}
 					if((edge_list[i][1]==last_id)&&(edge_list[i][0]==first_id))
 					{
-						fprintf(file4, "\t%d ", -i);
-						face_list[face_flag][++edge_count] = -i ;
+						fprintf(file4, "\t%d ", -(i+1));
+						face_list[face_flag][++edge_count] = -(i+1) ;
 					}
 				}
 			}
 			cell_end=-1;
+			last_id=-1;
 		}	
 							
 	}
@@ -377,7 +480,7 @@ for(int i = 0 ; i < 1000 ; i++)
 		if(match==1)
 		{
 			//j is the original id. Modify the cell_list with this number. 
-			for(int m = i ; m < face_flag ; m++)
+			for(int m = i ; m <=face_flag ; m++)    //CHANGED < to <=
 			{
 				for(int n = 0 ; n < 100 ; n++)
 				{
@@ -399,6 +502,7 @@ for(int i = 0 ; i < 1000 ; i++)
 		}
 	}
 
+	fprintf(file8, "faces\n");
 	file6 = fopen("face_list_sorted.txt", "w");
 	if ( file6 == NULL )
     	{
@@ -408,17 +512,27 @@ for(int i = 0 ; i < 1000 ; i++)
 
 	for(int i = 0 ; i<=face_flag ; i++)
 	{
-		fprintf(file6, "%d\t", i);
+		fprintf(file6, "%d\t", i+1);
+		fprintf(file8, "%d\t", i+1);
 		for(int j = 0 ; j<100 ; j++)
 		{
-			if((face_list[i][j]==-1)&&(face_list[i][j+1]==-1))
+			if((face_list[i][j]==INT_MAX))
+			{	
 				break;
-			fprintf(file6, "%d\t", face_list[i][j]);
+			}
+			if(face_list[i][j] >=0)
+				{fprintf(file6, "%d\t", face_list[i][j]);
+				fprintf(file8, "%d\t", face_list[i][j]);}
+			if(face_list[i][j] < 0)
+				{fprintf(file6, "%d\t", face_list[i][j]);
+				fprintf(file8, "%d\t", face_list[i][j]);}
 		}
 		fprintf(file6, "\n");
+		fprintf(file8, "\n");
 	}
 	fclose(file6);	
 
+	fprintf(file8, "bodies\n");
 	file7 = fopen("cell_list_sorted.txt", "w");
 	if ( file7 == NULL )
     	{
@@ -428,16 +542,24 @@ for(int i = 0 ; i < 1000 ; i++)
 
 	for(int i = 0 ; i<=cell_count ; i++)
 	{
-		fprintf(file7, "%d\t", i);
+		fprintf(file7, "%d\t", i+1);
+		fprintf(file8, "%d\t", i+1);
 		for(int j = 0 ; j<100 ; j++)
 		{
-			if((cell_list[i][j]==-1)&&(cell_list[i][j+1]==-1))
+			if((cell_list[i][j]==-1)&&(cell_list[i][j+1]==-1)&&(cell_list[i][j+2]==-1))
 				break;
-			fprintf(file7, "%d\t", cell_list[i][j]);
+			if(cell_list[i][j]>=0)
+				{fprintf(file7, "%d\t", cell_list[i][j]+1);
+				fprintf(file8, "%d\t", cell_list[i][j]+1);}
+			if(cell_list[i][j]<0)
+				{fprintf(file7, "%d\t", cell_list[i][j]-1);
+				fprintf(file8, "%d\t", cell_list[i][j]-1);}
 		}
 		fprintf(file7, "\n");
+		fprintf(file8, "\n");
 	}
 	fclose(file7);
+	fclose(file8);
 
 
 
