@@ -20,13 +20,13 @@ FILE * file8 ;
 
 const int n = 100 ;
 
-float vertex_list[1000][3];
+float vertex_list[100000][3];
 
-int edge_list[1000][2];
+int edge_list[100000][2];
 
-int face_list[1000][100];
+int face_list[100000][100];
 
-int cell_list[1000][100];
+int cell_list[100000][100];
 
 
 
@@ -68,7 +68,7 @@ int check_unique_edge(int old_id, int id, int edge_flag)
 int main(int argc, char * argv[])
 {
 
-for(int i = 0 ; i < 1000 ; i++)
+for(int i = 0 ; i < 100000 ; i++)
 {
 	for(int j = 0 ; j < 100 ; j++)
 	{
@@ -131,15 +131,16 @@ for(int i = 0 ; i < 1000 ; i++)
 		{
 			//x_old = y_old = z_old = 0 ;
 			//fscanf(file1, "%c", &temp_char);
-			sscanf( temp, " %f %f %f", &x, &y, &z);
+			//sscanf( temp, " %f %f %f", &x, &y, &z);
 			old_id = -1 ;
+			temp[0]='\0';
 			continue ;
 		}
-		fflush(file1);
+		//fflush(file1);
 		sscanf( temp, " %f %f %f", &x, &y, &z);
 		
 		//fscanf(file1, " %f %f %f", &x, &y, &z);
-		printf("%f %f %f\n", x, y, z);
+		//printf("%f %f %f\n", x, y, z);
 		if(feof(file1))
 		{
 			break;
@@ -181,7 +182,7 @@ for(int i = 0 ; i < 1000 ; i++)
 			else if((vertex_list[old_id][2]==1.0)&&(vertex_list[id][0]==1.0))
 				fprintf(file3, "\t\t\tconstraint 6");
 			fprintf(file3, "\n");
-			fflush(file3);
+			//fflush(file3);
 		}
 		i++;
 		old_id = id ;
@@ -214,7 +215,7 @@ for(int i = 0 ; i < 1000 ; i++)
 		else if(vertex_list[i][2]==1.0)
 			fprintf(file2, "\t\t\tconstraint 6");
 		fprintf(file2, "\n");
-		fflush(file2);
+		//fflush(file2);
 	}
 
 	fprintf(file8, "vertices\n");
@@ -242,27 +243,27 @@ for(int i = 0 ; i < 1000 ; i++)
 		else if(vertex_list[i][2]==1.0)
 			fprintf(file8, "\t\t\tconstraint 6");
 		fprintf(file8, "\n");
-		fflush(file8);
+		//fflush(file8);
 	}
 
 	fprintf(file8, "edges\n");
 	for(int i = 0 ; i <=edge_flag ; i++)
 	{
 			
-			fprintf(file8, "%d\t%d\t%d", i+1, old_id+1, id+1);
+			fprintf(file8, "%d\t%d\t%d", i+1, edge_list[i][0]+1, edge_list[i][1]+1);
 			//edge_list[edge_flag][0] = old_id ;
 			//edge_list[edge_flag][1] = id ;
-			if((vertex_list[old_id][0]==0.0)&&(vertex_list[id][0]==0.0))
+			if((vertex_list[edge_list[i][0]][0]==0.0)&&(vertex_list[edge_list[i][1]][0]==0.0))
 				fprintf(file8, "\t\t\tconstraint 1");
-			else if((vertex_list[old_id][0]==1.0)&&(vertex_list[id][0]==1.0))
+			else if((vertex_list[edge_list[i][0]][0]==1.0)&&(vertex_list[edge_list[i][1]][0]==1.0))
 				fprintf(file8, "\t\t\tconstraint 2");
-			else if((vertex_list[old_id][1]==0.0)&&(vertex_list[id][1]==0.0))
+			else if((vertex_list[edge_list[i][0]][1]==0.0)&&(vertex_list[edge_list[i][1]][1]==0.0))
 				fprintf(file8, "\t\t\tconstraint 3");
-			else if((vertex_list[old_id][1]==1.0)&&(vertex_list[id][0]==1.0))
+			else if((vertex_list[edge_list[i][0]][1]==1.0)&&(vertex_list[edge_list[i][1]][0]==1.0))
 				fprintf(file8, "\t\t\tconstraint 4");
-			else if((vertex_list[old_id][2]==0.0)&&(vertex_list[id][2]==0.0))
+			else if((vertex_list[edge_list[i][0]][2]==0.0)&&(vertex_list[edge_list[i][1]][2]==0.0))
 				fprintf(file8, "\t\t\tconstraint 5");
-			else if((vertex_list[old_id][2]==1.0)&&(vertex_list[id][0]==1.0))
+			else if((vertex_list[edge_list[i][0]][2]==1.0)&&(vertex_list[edge_list[i][1]][0]==1.0))
 				fprintf(file8, "\t\t\tconstraint 6");
 			fprintf(file8, "\n");
 			fflush(file8);
@@ -334,7 +335,7 @@ for(int i = 0 ; i < 1000 ; i++)
 			
 			fprintf(file5, "%d\t", face_flag+1);	
 			cell_list[cell_count][++face_count] = face_flag ;			
-			fflush(file1);
+			//fflush(file1);
 			memmove(temp, temp+1, strlen(temp));
 			sscanf( temp, " %f %f %f", &x, &y, &z);
 			
@@ -380,7 +381,7 @@ for(int i = 0 ; i < 1000 ; i++)
 				
 		if(temp[0]=='$')
 		{
-			fflush(file1);
+			//fflush(file1);
 			memmove(temp, temp+1, strlen(temp));
 			sscanf( temp, " %f %f %f", &x, &y, &z);
 			//printf("%f %f %f\n", x, y, z);
@@ -394,7 +395,7 @@ for(int i = 0 ; i < 1000 ; i++)
 				y=0.0;
 			if(z<0.000000)
 				z=0.0;
-			printf("%f %f %f\n", x, y, z);
+			//printf("%f %f %f\n", x, y, z);
 			id = assign_vertex_id(x,y,z);
 			for(int i = 0; i<=edge_flag ; i++)
 			{
@@ -521,8 +522,8 @@ for(int i = 0 ; i < 1000 ; i++)
 				break;
 			}
 			if(face_list[i][j] >=0)
-				{fprintf(file6, "%d\t", face_list[i][j]);
-				fprintf(file8, "%d\t", face_list[i][j]);}
+				{	fprintf(file6, "%d\t", face_list[i][j]);
+					fprintf(file8, "%d\t", face_list[i][j]);	}
 			if(face_list[i][j] < 0)
 				{fprintf(file6, "%d\t", face_list[i][j]);
 				fprintf(file8, "%d\t", face_list[i][j]);}
