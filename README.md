@@ -6,4 +6,4 @@ This repository contains the source files for the following :
 
 2.) Among the list of file provided, the correct sequence is the following : Sort.c takes in random_points_v.gnu as input and generates NewGenerator3D.fe. Sort.c also generates auxillary files such as vertex_list.txt, etc., for individual examination of geometrical features. 
 
-3.)
+
