@@ -3,7 +3,7 @@
  
 Author: Arun Baskaran
 
-The following source code generates a file containing 3-dimensional geometrical data, in a format that is appropriate to input into Surface Evolver. The code makes use of the open source library, Voro (http://math.lbl.gov/voro++/)
+The following source code generates a file containing 3-dimensional geometrical data, in a format that is appropriate to input into Surface Evolver. The code makes use of the open source library, Voro (http://math.lbl.gov/voro++/).
 
 Any distribution of the code must keep this header intact.
 
